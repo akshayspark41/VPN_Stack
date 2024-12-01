@@ -27,6 +27,13 @@ export class AwsClientVpnStack extends Stack {
       retention: logs.RetentionDays.ONE_WEEK,
     });
 
+    // CloudWatch log stream for VPN logs
+    const logStream = new logs.LogStream(this, 'VpnLogStream', {
+      logGroup: logGroup,
+      logStreamName: 'client-vpn-logs',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     // Client VPN Endpoint
     const clientVpnEndpoint = new ec2.CfnClientVpnEndpoint(this, 'ClientVpnEndpoint', {
       authenticationOptions: [{
@@ -39,7 +46,7 @@ export class AwsClientVpnStack extends Stack {
       connectionLogOptions: {
         enabled: true,
         cloudwatchLogGroup: logGroup.logGroupName,
-        cloudwatchLogStream: 'client-vpn-logs',
+        cloudwatchLogStream: logStream.logStreamName,
       },
       serverCertificateArn: config.serverCertificateArn,
       splitTunnel: config.splitTunnel,
